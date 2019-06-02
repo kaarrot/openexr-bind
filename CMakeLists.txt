@@ -1,13 +1,8 @@
-cmake_minimum_required(VERSION 3.12)
-
-set (CMAKE_ROOT "/usr/local/share/cmake-3.14") #FIXIT
-message (STATUS ${CMAKE_ROOT})
+cmake_minimum_required(VERSION 3.0)
 
 #TODO: check for zlib, python2.7 and other deps
 
-include(${CMAKE_ROOT}/Modules/ExternalProject.cmake)
-# include(ExternalProject)
-
+include(ExternalProject)
 
 ExternalProject_Add(
   "ilmbase"
@@ -22,12 +17,6 @@ ExternalProject_Add(
   "-DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_SOURCE_DIR}/install_dir"
 )
 
-# add_library(ilmbase SHARED IMPORTED)
-# set_target_properties(ilmbase PROPERTIES IMPORTED_LOCATION ${INSTALL_DIR}/src/ilmbase-build/install/lib/)
-
-ExternalProject_Get_property(ilmbase INSTALL_DIR)
-message("Source dir of myExtProj = ${INSTALL_DIR}")
-
 ExternalProject_Add(
   "openexr"
   PREFIX "external"
@@ -35,7 +24,7 @@ ExternalProject_Add(
   DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/openexr_download
   SOURCE_DIR ${CMAKE_BINARY_DIR}/openexr_src
   INSTALL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/install_dir
-  BUILD_COMMAND "" # this command is empty because all necessary targets will be built on install stage
+  BUILD_COMMAND ""
   CMAKE_ARGS
   "-DCMAKE_BUILD_TYPE=Release"
   "-DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_SOURCE_DIR}/install_dir"
@@ -43,7 +32,6 @@ ExternalProject_Add(
   )
 
 ExternalProject_Add_StepDependencies(openexr build ilmbase)
-
 
 ExternalProject_Add(
   "pyilmbase"
