@@ -1,5 +1,17 @@
 # openexr-bind
 
-- configure ilmbase tarball version (currently hardcoded)
-- check required system libraries before build: python2.7, zlib etc
+Python bindings of OpenEXR library using pybind
+
+## Requirements:
+- ilmbase
+- openexr
+- pyilmbase (reuse ilmbase base types) - hence requires Boost python
+- python2.7
+- cmake
+
+## Example:
+```
+python -c "import example; print example.add(2,3)"
+```
+
 
