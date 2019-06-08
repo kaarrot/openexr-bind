@@ -78,7 +78,7 @@ ExternalProject_Add(
   DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/pyilmbase_download
   SOURCE_DIR ${CMAKE_BINARY_DIR}/pyilmbase_src
   INSTALL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/install_dir
-  CONFIGURE_COMMAND ${CMAKE_BINARY_DIR}/openexr_src/./configure
+  CONFIGURE_COMMAND ${CMAKE_BINARY_DIR}/pyilmbase_src/./configure
   --prefix=${CMAKE_CURRENT_SOURCE_DIR}/install_dir PKG_CONFIG_PATH=../../install_dir/lib/pkgconfig --disable-ilmbasetest
   BUILD_COMMAND "make"
   )
