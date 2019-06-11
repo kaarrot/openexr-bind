@@ -88,7 +88,8 @@ ExternalProject_Add_StepDependencies(pyilmbase build ilmbase openexr)
 ExternalProject_Add(
   "pybind11"
   PREFIX "external"
-  GIT_REPOSITORY https://github.com/pybind/pybind11.git
+  # GIT_REPOSITORY https://github.com/pybind/pybind11.git
+  URL /home/kuba/PRJ/openexr-pybind/pybind_src
   DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/pybind_download
   SOURCE_DIR ${CMAKE_BINARY_DIR}/pybind_src
   INSTALL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/install_dir
@@ -104,4 +105,7 @@ SET_TARGET_PROPERTIES(example PROPERTIES PREFIX "") # remove lib from library pr
 set(CMAKE_CXX_FLAGS "-fno-strict-aliasing -fwrapv")
 add_dependencies(example pybind11 pyilmbase)
 
-target_include_directories(example PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/install_dir/include/ ${Python_INCLUDE_DIR})
+target_include_directories(example PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/install_dir/include/ ${CMAKE_CURRENT_SOURCE_DIR}/install_dir/include/OpenEXR ${Python_INCLUDE_DIR})
+
+target_link_libraries(example Imath Half Iex IexMath IlmThread IlmImf z pthread dl util m )
+install(TARGETS example DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/install_dir/lib/python2.7/site-packages/)
