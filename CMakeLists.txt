@@ -4,7 +4,10 @@ cmake_minimum_required(VERSION 3.0)
 
 include(ExternalProject)
 
-find_package (Python 2.7 REQUIRED COMPONENTS Development)
+set(PYTHON_VERSION ${PYTHON_VERSION} CACHE STRING "Major/Minor verison of Python. The default is  2.7. You may need to install python-dev")
+message (STATUS "Using Python: ${PYTHON_VERSION}")
+
+find_package (Python 3.7 REQUIRED COMPONENTS Development)
 find_package(Boost REQUIRED COMPONENTS system python)
 
 set(CMAKE_CXX_STANDARD 11)
@@ -80,6 +83,7 @@ ExternalProject_Add(
   INSTALL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/install_dir
   CONFIGURE_COMMAND ${CMAKE_BINARY_DIR}/openexr_src/./configure
   --prefix=${CMAKE_CURRENT_SOURCE_DIR}/install_dir PKG_CONFIG_PATH=../../install_dir/lib/pkgconfig --disable-ilmbasetest
+  --build=x86_64-unknown-linux-gnu
   BUILD_COMMAND "make"
   )
 
@@ -102,6 +106,6 @@ ExternalProject_Add(
 add_library(example SHARED src/example.cpp)         # sources
 SET_TARGET_PROPERTIES(example PROPERTIES PREFIX "") # remove lib from library prefix
 set(CMAKE_CXX_FLAGS "-fno-strict-aliasing -fwrapv")
-add_dependencies(example pybind11 pyilmbase)
+add_dependencies(example pybind11 pyilmbase )
 
 target_include_directories(example PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/install_dir/include/ ${Python_INCLUDE_DIR})
