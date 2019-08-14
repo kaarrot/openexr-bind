@@ -12,6 +12,7 @@ channels and channel does not work
 
 */
 
+
 #include <pybind11/pybind11.h>
 
 #include <ImathBox.h>
@@ -144,9 +145,10 @@ void test_header(){
         Header h = ii.header();
         cout << h.screenWindowWidth() << endl;
 
-        StringAttribute astr("BB----");
-        h.insert("BB", astr);
-        StringAttribute *aa = h.findTypedAttribute<StringAttribute>("BB");                                       
+        // StringAttribute astr("BB----");
+				TypedAttribute<string> astra("CCC");
+        h.insert("CCC", astra);
+        TypedAttribute<string> *aa = h.findTypedAttribute<TypedAttribute<string>>("CCC");                                       
         cout << aa->value() << "___" <<endl;
 
 
@@ -156,6 +158,7 @@ void test_header(){
         }
 }
 
+
 PYBIND11_MODULE(example, m) {
     m.doc() = "pybind11 example plugin"; // optional module docstring
 
@@ -163,53 +166,62 @@ PYBIND11_MODULE(example, m) {
 		
     m.def("add", &add, "A function which adds two numbers");
 
-                // try to import Imath
-                //py::object Imath = py::module::import("Imath");
+		// try to import Imath
+		//py::object Imath = py::module::import("Imath");
 
-                // this does not expose anything in python - but may overwrite c++stuff
-                // py::object Box = py::module::import("Imath").attr("Box");
-                // py::object Box2f = py::module::import("Imath").attr("Box2f");
-                // py::object Box2i = py::module::import("Imath").attr("Box2i");
-                // py::object Channel = py::module::import("Imath").attr("Channel");
-                // // py::object Chromacities = py::module::import("Imath").attr("Chromaticities");
-                // py::object Compression = py::module::import("Imath").attr("Compression");
-                // py::object LineOrder = py::module::import("Imath").attr("LineOrder");
-                // py::object PixelType = py::module::import("Imath").attr("PixelType");
-                // py::object PreviewImage = py::module::import("Imath").attr("PreviewImage");
-                // py::object V2f = py::module::import("Imath").attr("V2f");
-                // py::object V2i = py::module::import("Imath").attr("V2i");
-
-
-                //TODO //['FLOAT', 'HALF', 'Header', 'InputFile', 'OutputFile', 'UINT', '__doc__', '__file__', '__name__', '__package__', '__version__', 'error',
-
-                // Current; ['__doc__', '__file__', '__name__', '__package__', 'add']
-
-                m.attr("FLOAT") = PyLong_FromLong(FLOAT);
-                m.attr("HALF") = PyLong_FromLong(HALF);
-                m.attr("UINT") = PyLong_FromLong(UINT);
-                // m.attr("__version__") = PyString_FromString(VERSION);
+		// this does not expose anything in python - but may overwrite c++stuff
+		// py::object Box = py::module::import("Imath").attr("Box");
+		// py::object Box2f = py::module::import("Imath").attr("Box2f");
+		// py::object Box2i = py::module::import("Imath").attr("Box2i");
+		// py::object Channel = py::module::import("Imath").attr("Channel");
+		// // py::object Chromacities = py::module::import("Imath").attr("Chromaticities");
+		// py::object Compression = py::module::import("Imath").attr("Compression");
+		// py::object LineOrder = py::module::import("Imath").attr("LineOrder");
+		// py::object PixelType = py::module::import("Imath").attr("PixelType");
+		// py::object PreviewImage = py::module::import("Imath").attr("PreviewImage");
+		// py::object V2f = py::module::import("Imath").attr("V2f");
+		// py::object V2i = py::module::import("Imath").attr("V2i");
 
 
+		//TODO //['FLOAT', 'HALF', 'Header', 'InputFile', 'OutputFile', 'UINT', '__doc__', '__file__', '__name__', '__package__', '__version__', 'error',
+		
+		// Current; ['__doc__', '__file__', '__name__', '__package__', 'add']
+		
+		m.attr("FLOAT") = PyLong_FromLong(FLOAT);
+		m.attr("HALF") = PyLong_FromLong(HALF);
+		m.attr("UINT") = PyLong_FromLong(UINT);
+		// m.attr("__version__") = PyString_FromString(VERSION);
+		
+		
     //https://pybind11.readthedocs.io/en/master/classes.html#creating-bindings-for-a-custom-type
-                py::class_<InputFile>(m, "InputFile")
-                  .def(py::init<const char* , int >())
-                  // .def_readonly("header", &InputFile::header)
-                  .def("header", &InputFile::header);
+		py::class_<InputFile>(m, "InputFile")
+			.def(py::init<const char* , int >())
+			// .def_readonly("header", &InputFile::header)
+			.def("header", &InputFile::header)
+			.def("hh", [](InputFile &self) {
+					cout << self.fileName() <<endl;
+				});
+		
+		
+		py::class_<Header>(m, "Header");
 
+		// py::base<Base>()
+		py::class_<TypedAttribute<string>>(m, "TypedAttribute")
+		  .def(py::init<std::string>())
+				 // .def_readwrite("_value", &TypedAttribute<string>::_value);
+		// .def_property("_value", &TypedAttribute<string>::value);
+			.def("value", [](TypedAttribute<string> &self){  // working
+				cout << self.value() <<endl;
+			});
+		
+		// py::class_<StringAttribute>(m, "StringAttribute", py::dynamic_attr())
+		// 	.def(py::init<>())
+		// 	// .def_readwrite("_value", &StringAttribute::_value);
+		// 	.def_property("_value", &StringAttribute::value);
+		
 
-                py::class_<Header>(m, "Header");
+		// Option 1 (Better)- if defined custom type_caster
+		m.def("vec_test_cpp", &vec_test_cpp);
+		
 
-                // Option 1 (Better)- if defined custom type_caster
-                m.def("vec_test_cpp", &vec_test_cpp);
-
-                // Option 2 - no cater required but need to handle conversion per each method
-                // m.def("vec_test_cpp", []() {
-                //              py::object pyV2i = py::module::import("Imath").attr("V2i");
-                //              cout << vec_test_cpp() <<endl;
-                //              V2i aaa = vec_test_cpp();
-                //              // pyV2i bbb = py::cast(aaa); // not working - Imath.V2i is known at runtime
-
-                //              return pyV2i(aaa.x,aaa.y);  // this is working
-
-                //      });
 }
