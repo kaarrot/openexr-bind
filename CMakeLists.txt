@@ -72,6 +72,14 @@ ExternalProject_Add(
 
 ExternalProject_Add_StepDependencies(openexr build ilmbase)
 
+# Arm (aarch64) is not handled at the moment by openexr_src/config.guess
+# Ideally this should be patched but for now we handle this ourselves.
+set(host_architecture ${CMAKE_HOST_SYSTEM_PROCESSOR})
+if (${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "aarch64")
+  set (host_architecture "x86_64-unknown-linux-gnu")
+  message (STATUS "Build arch: ${host_architecture}")
+endif()
+
 ExternalProject_Add(
   "pyilmbase"
   PREFIX "external"
@@ -83,7 +91,7 @@ ExternalProject_Add(
   INSTALL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/install_dir
   CONFIGURE_COMMAND ${CMAKE_BINARY_DIR}/openexr_src/./configure
   --prefix=${CMAKE_CURRENT_SOURCE_DIR}/install_dir PKG_CONFIG_PATH=../../install_dir/lib/pkgconfig --disable-ilmbasetest
-  --build=x86_64-unknown-linux-gnu
+  --build=${host_architecture}
   BUILD_COMMAND "make"
   )
 
