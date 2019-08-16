@@ -4,10 +4,10 @@ cmake_minimum_required(VERSION 3.0)
 
 include(ExternalProject)
 
-set(PYTHON_VERSION ${PYTHON_VERSION} CACHE STRING "Major/Minor verison of Python. The default is  2.7. You may need to install python-dev")
+set(PYTHON_VERSION 2.7 CACHE STRING "Major/Minor verison of Python. The default is  2.7. You may need to install python-dev")
 message (STATUS "Using Python: ${PYTHON_VERSION}")
 
-find_package (Python 3.7 REQUIRED COMPONENTS Development)
+find_package (Python ${PYTHON_VERSION} REQUIRED COMPONENTS Development)
 find_package(Boost REQUIRED COMPONENTS system python)
 
 set(CMAKE_CXX_STANDARD 11)
@@ -89,7 +89,7 @@ ExternalProject_Add(
   DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/pyilmbase_download
   SOURCE_DIR ${CMAKE_BINARY_DIR}/pyilmbase_src
   INSTALL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/install_dir
-  CONFIGURE_COMMAND ${CMAKE_BINARY_DIR}/openexr_src/./configure
+  CONFIGURE_COMMAND ${CMAKE_BINARY_DIR}/pyilmbase_src/./configure
   --prefix=${CMAKE_CURRENT_SOURCE_DIR}/install_dir PKG_CONFIG_PATH=../../install_dir/lib/pkgconfig --disable-ilmbasetest
   --build=${host_architecture}
   BUILD_COMMAND "make"
@@ -101,6 +101,8 @@ ExternalProject_Add(
   "pybind11"
   PREFIX "external"
   GIT_REPOSITORY https://github.com/pybind/pybind11.git
+  # Optinally use locally checked out repo
+  #URL /home/kuba/PRJ/openexr-pybind/pybind_src
   DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/pybind_download
   SOURCE_DIR ${CMAKE_BINARY_DIR}/pybind_src
   INSTALL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/install_dir
