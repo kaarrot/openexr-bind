@@ -5,7 +5,7 @@ Python bindings of OpenEXR library using pybind
 ## Requirements:
 - ilmbase
 - openexr
-- pyilmbase (reuse ilmbase base types) - hence requires Boost python
+- pyilmbase (reuse ilmbase base types) - requires Boost python,system
 - python
 - cmake
 
@@ -24,6 +24,11 @@ python3.7 -c "import example; print (example.add(2,3))"
 #### Install Python headers
 sudo apt install python2.7-dev/bionic-updates
 
+#### Install boost dependencies
+```
+sudo apt install libboost-system1.60-dev/oldstable
+sudo apt install libboost-python1.60-dev/oldstable
+```
 #### Install Python CMake files
 In case CMake returns the following error:
 ```
