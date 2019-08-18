@@ -75,7 +75,8 @@ ExternalProject_Add_StepDependencies(openexr build ilmbase)
 # Arm (aarch64) is not handled at the moment by openexr_src/config.guess
 # Ideally this should be patched but for now we handle this ourselves.
 set(host_architecture ${CMAKE_HOST_SYSTEM_PROCESSOR})
-if (${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "aarch64")
+if ((${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "aarch64") OR # jetson nano
+    (${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "armv7l"))    # rpi 3B+
   set (host_architecture "x86_64-unknown-linux-gnu")
   message (STATUS "Build arch: ${host_architecture}")
 endif()
