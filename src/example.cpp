@@ -107,6 +107,11 @@ namespace py = pybind11;
 
 ////////////////////////////////////////////////////////
 
+int add(int i, int j) {
+	// Box2i b = Box2i(0,0,1,2);
+	// Vec2 v = Vec2(1,2);
+    return i + j;
+}
 
 namespace pybind11 { namespace detail {
     template <> struct type_caster<V2i> {
