@@ -123,5 +123,10 @@ add_dependencies(example pybind11 pyilmbase )
 
 target_include_directories(example PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/install_dir/include/ ${CMAKE_CURRENT_SOURCE_DIR}/install_dir/include/OpenEXR ${Python_INCLUDE_DIR})
 
-target_link_libraries(example Imath Half Iex IexMath IlmThread IlmImf z pthread dl util m )
-install(TARGETS example DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/install_dir/lib/python2.7/site-packages/)
+# Add the to already built libraries
+# TODO: find a better way to discover link path 
+target_link_libraries(example -L/${CMAKE_CURRENT_SOURCE_DIR}/install_dir/lib/)
+# Adding explicit 2_2 to IlmImf (libIlmImf.so not created on Arm)
+target_link_libraries(example Imath Half Iex IexMath IlmThread IlmImf-${DSO_VERSION} z pthread dl util m )
+
+install(TARGETS example DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/install_dir/lib/python${PYTHON_VERSION}/site-packages/)
