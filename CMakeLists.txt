@@ -104,6 +104,8 @@ ExternalProject_Add(
   GIT_REPOSITORY https://github.com/pybind/pybind11.git
   # Optinally use locally checked out repo
   #URL /home/kuba/PRJ/openexr-pybind/pybind_src
+  # GIT_REPOSITORY https://github.com/pybind/pybind11.git
+  URL /home/kuba/PRJ/openexr-pybind/pybind_src
   DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/pybind_download
   SOURCE_DIR ${CMAKE_BINARY_DIR}/pybind_src
   INSTALL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/install_dir
