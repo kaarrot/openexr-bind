@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-#project(openexr)
+project(openexr-bind)
 
 include(ExternalProject)
 
@@ -34,8 +34,6 @@ message (STATUS "using location: ${TAR_LOCATION}")
 ExternalProject_Add(
   "ilmbase"
   PREFIX "external"
-  #URL http://download.savannah.nongnu.org/releases/openexr/ilmbase-2.2.0.tar.gz
-  # URL ${CMAKE_CURRENT_SOURCE_DIR}/ilmbase-2.2.0.tar.gz
   URL ${TAR_LOCATION}/ilmbase-${EXR_VERSION}.tar.gz
   DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/ilmbase_download
   SOURCE_DIR ${CMAKE_BINARY_DIR}/ilmbase_src
@@ -57,8 +55,6 @@ add_custom_command(TARGET ilmbase POST_BUILD
 ExternalProject_Add(
   "openexr"
   PREFIX "external"
-  # URL http://download.savannah.nongnu.org/releases/openexr/openexr-2.2.0.tar.gz
-  # URL ${CMAKE_CURRENT_SOURCE_DIR}/openexr-2.2.0.tar.gz
   URL ${TAR_LOCATION}/openexr-${EXR_VERSION}.tar.gz
   DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/openexr_download
   SOURCE_DIR ${CMAKE_BINARY_DIR}/openexr_src
@@ -78,21 +74,20 @@ set(host_architecture ${CMAKE_HOST_SYSTEM_PROCESSOR})
 if ((${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "aarch64") OR # jetson nano
     (${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "armv7l"))    # rpi 3B+
   set (host_architecture "x86_64-unknown-linux-gnu")
-  message (STATUS "Build arch: ${host_architecture}")
+  message (STATUS "openexr build arch: ${host_architecture} (instead of ${CMAKE_HOST_SYSTEM_PROCESSOR})")
 endif()
+
 
 ExternalProject_Add(
   "pyilmbase"
   PREFIX "external"
-  # URL http://download.savannah.gnu.org/releases/openexr/pyilmbase-2.2.0.tar.gz
-  # URL /u/kr/SRC/openexr-bind/pyilmbase-2.2.0.tar.gz
   URL ${TAR_LOCATION}/pyilmbase-${EXR_VERSION}.tar.gz
   DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/pyilmbase_download
   SOURCE_DIR ${CMAKE_BINARY_DIR}/pyilmbase_src
   INSTALL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/install_dir
   CONFIGURE_COMMAND ${CMAKE_BINARY_DIR}/pyilmbase_src/./configure
   --prefix=${CMAKE_CURRENT_SOURCE_DIR}/install_dir PKG_CONFIG_PATH=../../install_dir/lib/pkgconfig --disable-ilmbasetest
-  --build=${host_architecture}
+  --build=${CMAKE_HOST_SYSTEM_PROCESSOR}-unknown-linux-gnu
   BUILD_COMMAND "make"
   )
 
@@ -101,11 +96,10 @@ ExternalProject_Add_StepDependencies(pyilmbase build ilmbase openexr)
 ExternalProject_Add(
   "pybind11"
   PREFIX "external"
-  GIT_REPOSITORY https://github.com/pybind/pybind11.git
   # Optinally use locally checked out repo
-  #URL /home/kuba/PRJ/openexr-pybind/pybind_src
-  # GIT_REPOSITORY https://github.com/pybind/pybind11.git
-  URL /home/kuba/PRJ/openexr-pybind/pybind_src
+  # URL ${CMAKE_CURRENT_SOURCE_DIR}/pybind_src
+  GIT_REPOSITORY https://github.com/pybind/pybind11.git
+  GIT_TAG "v2.3.0"
   DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/pybind_download
   SOURCE_DIR ${CMAKE_BINARY_DIR}/pybind_src
   INSTALL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/install_dir
