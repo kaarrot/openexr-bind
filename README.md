@@ -8,10 +8,13 @@ Python bindings of OpenEXR library using pybind
 - pyilmbase (reuse ilmbase base types) - requires Boost python,system
 - python
 - cmake
+- Boost Python (support for Python version the bindings are built for)
 
 ## Building
 ```
-cmake -DPYTHON_VERSION=3.7 ..
+export PYTHON=python3.6
+cmake -DPYTHON_VERSION=3.6 ..
+cmake .. -DPYTHON_VERSION=3.6 -DBUILD_BOOST_PYTHON=ON
 ```
 
 ## Example:

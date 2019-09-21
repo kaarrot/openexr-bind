@@ -7,8 +7,15 @@ include(ExternalProject)
 set(PYTHON_VERSION 2.7 CACHE STRING "Major/Minor verison of Python. The default is  2.7. You may need to install python-dev")
 message (STATUS "Using Python: ${PYTHON_VERSION}")
 
+set(BUILD_BOOST_PYTHON OFF CACHE BOOL "Build Boost - required if package manager does not ship specific version of boost-python bindings")
+
 find_package (Python ${PYTHON_VERSION} REQUIRED COMPONENTS Development)
-find_package(Boost REQUIRED COMPONENTS system python)
+if (BUILD_BOOST_PYTHON)
+    message (STATUS "Building Boost")
+else()
+  message (STATUS "Using system Boost")
+  find_package(Boost REQUIRED COMPONENTS system python)
+endif()
 
 set(CMAKE_CXX_STANDARD 11)
 set(OFFLINE 0 CACHE BOOL "Skips download and uses tarballs downloaded into the root of the project")
@@ -30,6 +37,21 @@ else()
   set (TAR_LOCATION ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 message (STATUS "using location: ${TAR_LOCATION}")
+
+if ( BUILD_BOOST_PYTHON) 
+ExternalProject_Add(
+  "boost"
+  PREFIX "external"
+  URL https://dl.bintray.com/boostorg/release/1.71.0/source/boost_1_71_0.tar.gz
+  DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/boost_download
+  SOURCE_DIR ${CMAKE_BINARY_DIR}/boost_src
+  INSTALL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/install_dir
+  BUILD_IN_SOURCE  1
+  CONFIGURE_COMMAND ${CMAKE_BINARY_DIR}/boost_src/bootstrap.sh  --with-libraries=python --with-libraries=filesystem --with-libraries=system --with-python-version=3.6 --prefix=${CMAKE_CURRENT_SOURCE_DIR}/install_dir
+  BUILD_COMMAND ${CMAKE_BINARY_DIR}/boost_src/b2
+  INSTALL_COMMAND ${CMAKE_BINARY_DIR}/boost_src/b2 install
+  )
+endif()
 
 ExternalProject_Add(
   "ilmbase"
@@ -66,8 +88,6 @@ ExternalProject_Add(
   "-DILMBASE_PACKAGE_PREFIX=${CMAKE_CURRENT_SOURCE_DIR}/install_dir"
   )
 
-ExternalProject_Add_StepDependencies(openexr build ilmbase)
-
 # Arm (aarch64) is not handled at the moment by openexr_src/config.guess
 # Ideally this should be patched but for now we handle this ourselves.
 set(host_architecture ${CMAKE_HOST_SYSTEM_PROCESSOR})
@@ -78,6 +98,18 @@ if ((${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "aarch64") OR # jetson nano
 endif()
 
 
+set (PYILMBASE_PATCH_CMD "")
+set (PYILMBASE_CONFIGURE_CMD   CONFIGURE_COMMAND ${CMAKE_BINARY_DIR}/pyilmbase_src/./configure   --prefix=${CMAKE_CURRENT_SOURCE_DIR}/install_dir PKG_CONFIG_PATH=../../install_dir/lib/pkgconfig --disable-ilmbasetest --build=${CMAKE_HOST_SYSTEM_PROCESSOR}-unknown-linux-gnu )
+if ( BUILD_BOOST_PYTHON) 
+  ExternalProject_Add_StepDependencies(ilmbase build boost)
+  set (PYILMBASE_PATCH_CMD patch configure < ${CMAKE_CURRENT_SOURCE_DIR}/pyilmbase_configure.patch)
+  set (PYILMBASE_CONFIGURE_CMD ${CMAKE_BINARY_DIR}/pyilmbase_src/./configure   --prefix=${CMAKE_CURRENT_SOURCE_DIR}/install_dir PKG_CONFIG_PATH=../../install_dir/lib/pkgconfig --disable-ilmbasetest --with-boost-include-dir=${CMAKE_CURRENT_SOURCE_DIR}/install_dir/include --with-boost-lib-dir=${CMAKE_CURRENT_SOURCE_DIR}/install_dir/lib --with-boost-python-libname=boost_python36  --build=${CMAKE_HOST_SYSTEM_PROCESSOR}-unknown-linux-gnu )
+endif()
+  
+ExternalProject_Add_StepDependencies(openexr build ilmbase)
+
+
+
 ExternalProject_Add(
   "pyilmbase"
   PREFIX "external"
@@ -85,10 +117,8 @@ ExternalProject_Add(
   DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/pyilmbase_download
   SOURCE_DIR ${CMAKE_BINARY_DIR}/pyilmbase_src
   INSTALL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/install_dir
-  # PATCH_COMMAND patch -p1 < ${CMAKE_CURRENT_SOURCE_DIR}/python3.patch # TODO
-  CONFIGURE_COMMAND ${CMAKE_BINARY_DIR}/pyilmbase_src/./configure 
-  --prefix=${CMAKE_CURRENT_SOURCE_DIR}/install_dir PKG_CONFIG_PATH=../../install_dir/lib/pkgconfig --disable-ilmbasetest 
-  --build=${CMAKE_HOST_SYSTEM_PROCESSOR}-unknown-linux-gnu
+  PATCH_COMMAND ${PYILMBASE_PATCH_CMD}
+  CONFIGURE_COMMAND ${PYILMBASE_CONFIGURE_CMD}
   BUILD_COMMAND "make"
   )
 
