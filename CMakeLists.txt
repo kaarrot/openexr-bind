@@ -10,10 +10,9 @@ message (STATUS "Using Python: ${PYTHON_VERSION}")
 
 set(BUILD_BOOST_PYTHON OFF CACHE BOOL "Build Boost - required if package manager does not ship specific version of boost-python bindings")
 
-
 find_package (Python ${PYTHON_VERSION} REQUIRED COMPONENTS Development)
 if (BUILD_BOOST_PYTHON)
-    message (STATUS "Building Boost")
+   message (STATUS "Building Boost")
 else()
   message (STATUS "Using system Boost")
   find_package(Boost REQUIRED COMPONENTS system python)
@@ -107,24 +106,16 @@ if ( BUILD_BOOST_PYTHON)
   set (PYILMBASE_PATCH_CMD patch configure < ${CMAKE_CURRENT_SOURCE_DIR}/pyilmbase_configure.patch)
   set (PYILMBASE_CONFIGURE_CMD ${CMAKE_BINARY_DIR}/pyilmbase_src/./configure   --prefix=${CMAKE_CURRENT_SOURCE_DIR}/install_dir PKG_CONFIG_PATH=../../install_dir/lib/pkgconfig --with-boost-include-dir=${CMAKE_CURRENT_SOURCE_DIR}/install_dir/include --with-boost-lib-dir=${CMAKE_CURRENT_SOURCE_DIR}/install_dir/lib --with-boost-python-libname=boost_python${PYTHON_VERSION_NUMERIC} --build=${CMAKE_HOST_SYSTEM_PROCESSOR}-unknown-linux-gnu )
 
-  # find_package(Boost REQUIRED COMPONENTS system python HINTS  ${CMAKE_CURRENT_SOURCE_DIR}/install_dir/lib/cmake/Boost-1.71.0)
 endif()
-
 
 ExternalProject_Add_StepDependencies(openexr build ilmbase)
 
 # On some systems libpythonX.X.so is missing, link it with existing libpythonX.Xm.so
-set(system_lib_path /usr/lib/${CMAKE_HOST_SYSTEM_PROCESSOR}-linux-gnu/)
-message (STATUS "Checking libpython${PYTHON_VERSION}.so")
+set(system_lib_path /usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}/)
+message (STATUS "Checking ${system_lib_path}/libpython${PYTHON_VERSION}.so")
 if (NOT (EXISTS ${system_lib_path}/libpython${PYTHON_VERSION}.so))
   message (FATAL_ERROR "missing symlink to ${system_lib_path}/libpython${PYTHON_VERSION}.so")    
 endif()
-
-# TODO
-# When puiling for python 3 export PYTHON=python.3.6 
-# if (NOT (VARIABLE PYTHON)
-#   message (FATAL_ERROR ""
-# endif()
   
 ExternalProject_Add(
   "pyilmbase"
