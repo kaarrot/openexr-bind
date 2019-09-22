@@ -5,9 +5,11 @@ project(openexr-bind)
 include(ExternalProject)
 
 set(PYTHON_VERSION 2.7 CACHE STRING "Major/Minor verison of Python. The default is  2.7. You may need to install python-dev")
+STRING ( REGEX REPLACE "[.]" "" PYTHON_VERSION_NUMERIC ${PYTHON_VERSION} )
 message (STATUS "Using Python: ${PYTHON_VERSION}")
 
 set(BUILD_BOOST_PYTHON OFF CACHE BOOL "Build Boost - required if package manager does not ship specific version of boost-python bindings")
+
 
 find_package (Python ${PYTHON_VERSION} REQUIRED COMPONENTS Development)
 if (BUILD_BOOST_PYTHON)
@@ -47,7 +49,7 @@ ExternalProject_Add(
   SOURCE_DIR ${CMAKE_BINARY_DIR}/boost_src
   INSTALL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/install_dir
   BUILD_IN_SOURCE  1
-  CONFIGURE_COMMAND ${CMAKE_BINARY_DIR}/boost_src/bootstrap.sh  --with-libraries=python --with-libraries=filesystem --with-libraries=system --with-python-version=3.6 --prefix=${CMAKE_CURRENT_SOURCE_DIR}/install_dir
+  CONFIGURE_COMMAND ${CMAKE_BINARY_DIR}/boost_src/bootstrap.sh  --with-libraries=python --with-libraries=filesystem --with-libraries=system --with-python-version=${PYTHON_VERSION} --prefix=${CMAKE_CURRENT_SOURCE_DIR}/install_dir
   BUILD_COMMAND ${CMAKE_BINARY_DIR}/boost_src/b2
   INSTALL_COMMAND ${CMAKE_BINARY_DIR}/boost_src/b2 install
   )
@@ -99,17 +101,31 @@ endif()
 
 
 set (PYILMBASE_PATCH_CMD "")
-set (PYILMBASE_CONFIGURE_CMD   CONFIGURE_COMMAND ${CMAKE_BINARY_DIR}/pyilmbase_src/./configure   --prefix=${CMAKE_CURRENT_SOURCE_DIR}/install_dir PKG_CONFIG_PATH=../../install_dir/lib/pkgconfig --disable-ilmbasetest --build=${CMAKE_HOST_SYSTEM_PROCESSOR}-unknown-linux-gnu )
+set (PYILMBASE_CONFIGURE_CMD   CONFIGURE_COMMAND ${CMAKE_BINARY_DIR}/pyilmbase_src/./configure   --prefix=${CMAKE_CURRENT_SOURCE_DIR}/install_dir PKG_CONFIG_PATH=../../install_dir/lib/pkgconfig --build=${CMAKE_HOST_SYSTEM_PROCESSOR}-unknown-linux-gnu )
 if ( BUILD_BOOST_PYTHON) 
   ExternalProject_Add_StepDependencies(ilmbase build boost)
   set (PYILMBASE_PATCH_CMD patch configure < ${CMAKE_CURRENT_SOURCE_DIR}/pyilmbase_configure.patch)
-  set (PYILMBASE_CONFIGURE_CMD ${CMAKE_BINARY_DIR}/pyilmbase_src/./configure   --prefix=${CMAKE_CURRENT_SOURCE_DIR}/install_dir PKG_CONFIG_PATH=../../install_dir/lib/pkgconfig --disable-ilmbasetest --with-boost-include-dir=${CMAKE_CURRENT_SOURCE_DIR}/install_dir/include --with-boost-lib-dir=${CMAKE_CURRENT_SOURCE_DIR}/install_dir/lib --with-boost-python-libname=boost_python36  --build=${CMAKE_HOST_SYSTEM_PROCESSOR}-unknown-linux-gnu )
+  set (PYILMBASE_CONFIGURE_CMD ${CMAKE_BINARY_DIR}/pyilmbase_src/./configure   --prefix=${CMAKE_CURRENT_SOURCE_DIR}/install_dir PKG_CONFIG_PATH=../../install_dir/lib/pkgconfig --with-boost-include-dir=${CMAKE_CURRENT_SOURCE_DIR}/install_dir/include --with-boost-lib-dir=${CMAKE_CURRENT_SOURCE_DIR}/install_dir/lib --with-boost-python-libname=boost_python${PYTHON_VERSION_NUMERIC} --build=${CMAKE_HOST_SYSTEM_PROCESSOR}-unknown-linux-gnu )
+
+  # find_package(Boost REQUIRED COMPONENTS system python HINTS  ${CMAKE_CURRENT_SOURCE_DIR}/install_dir/lib/cmake/Boost-1.71.0)
 endif()
-  
+
+
 ExternalProject_Add_StepDependencies(openexr build ilmbase)
 
+# On some systems libpythonX.X.so is missing, link it with existing libpythonX.Xm.so
+set(system_lib_path /usr/lib/${CMAKE_HOST_SYSTEM_PROCESSOR}-linux-gnu/)
+message (STATUS "Checking libpython${PYTHON_VERSION}.so")
+if (NOT (EXISTS ${system_lib_path}/libpython${PYTHON_VERSION}.so))
+  message (FATAL_ERROR "missing symlink to ${system_lib_path}/libpython${PYTHON_VERSION}.so")    
+endif()
 
-
+# TODO
+# When puiling for python 3 export PYTHON=python.3.6 
+# if (NOT (VARIABLE PYTHON)
+#   message (FATAL_ERROR ""
+# endif()
+  
 ExternalProject_Add(
   "pyilmbase"
   PREFIX "external"

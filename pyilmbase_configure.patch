@@ -1,0 +1,13 @@
+--- configure	2014-08-09 21:38:44.000000000 -0700
++++ ../../../pyilmbase_configure.patch	2019-09-20 19:56:16.299455423 -0700
+@@ -16060,8 +16060,8 @@
+   fi
+ 
+ 
+-PYTHON_INC_DIR=`$PYTHON -c 'from distutils.sysconfig import *; print get_python_inc()'`
+-PYTHON_LIB_DIR=`$PYTHON -c 'from distutils.sysconfig import *; print get_config_var("LIBDIR")'`
++PYTHON_INC_DIR=`$PYTHON -c 'from distutils.sysconfig import *; print (get_python_inc())'`
++PYTHON_LIB_DIR=`$PYTHON -c 'from distutils.sysconfig import *; print (get_config_var("LIBDIR"))'`
+ LIBS="$LIBS -lpython$PYTHON_VERSION"
+ 
+ BOOST_PYTHON_CXXFLAGS=""
