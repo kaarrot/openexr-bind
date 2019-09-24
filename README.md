@@ -19,6 +19,12 @@ export PYTHON=python3.6  # extra step for PyIlmbase
 cmake -DPYTHON_VERSION=3.6 ..
 cmake .. -DPYTHON_VERSION=3.6 -DBUILD_BOOST_PYTHON=ON
 ```
+### CMake flags
+-DPYTHON_VERSION=2.7 - version of Python
+-DBUILD_BOOST_PYTHON=OFF - Builds local version of Boost-Python (may be required for building python3 bindings). Default version uses system Boost 
+-DOFFLINE=OFF Uses tar.gz files located in the root of the projects. Skip download step.
+-DUSE_CUSTOM_PYTHON="" Specify custom version of Python to build bindings. The version has to match -DPYTHON_VERSION flag
+
 
 ## Example (testing Pybind11):
 ```
@@ -29,6 +35,21 @@ python3.7 -c "import example; print (example.add(2,3))"
 ```
 cd tests
 run_tests.sh
+```
+
+## Building custom Python
+```
+git clone https://github.com/python/cpython.git
+./configure --enable-shared --prefix=$HOME/toolchains/python
+make install
+```
+Building Boost-Python find python executable py running 'python'. Create a Symlink  python to pythonX.X
+```
+cd $HOME/python/bin && ln -s python3.9 python
+```
+Similarily for shared library as it is -lpython is used in pyilmbase link tests
+```
+cd $HOME/python/lib && ln -s python3.so python.so
 ```
 
 ## Troubleshooting
