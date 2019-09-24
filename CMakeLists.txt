@@ -181,7 +181,7 @@ if ( BUILD_BOOST_PYTHON)
 
   set (PYILMBASE_PATCH_CMD sed -i -r s/^PYTHON_[A-Z]+_DIR=/\#&/ ${CMAKE_BINARY_DIR}/pyilmbase_src/configure)
 
-  set (PYILMBASE_CONFIGURE_CMD LD_LIBRARY_PATH=${CMAKE_CURRENT_SOURCE_DIR}/install_dir/lib:${CUSTOM_PYTHON_ROOT}/lib ${CMAKE_BINARY_DIR}/pyilmbase_src/./configure   --prefix=${CMAKE_CURRENT_SOURCE_DIR}/install_dir PKG_CONFIG_PATH=../../install_dir/lib/pkgconfig    --with-boost-include-dir=${CMAKE_CURRENT_SOURCE_DIR}/install_dir/include --with-boost-python-libname=boost_python${PYTHON_VERSION_NUMERIC}    --build=${CMAKE_HOST_SYSTEM_PROCESSOR}-unknown-linux-gnu )
+  set (PYILMBASE_CONFIGURE_CMD LD_LIBRARY_PATH=${CMAKE_CURRENT_SOURCE_DIR}/install_dir/lib:${CUSTOM_PYTHON_ROOT}/lib ${CMAKE_BINARY_DIR}/pyilmbase_src/./configure   --prefix=${CMAKE_CURRENT_SOURCE_DIR}/install_dir PKG_CONFIG_PATH=../../install_dir/lib/pkgconfig    --with-boost-include-dir=${CMAKE_CURRENT_SOURCE_DIR}/install_dir/include --with-boost-lib-dir=${CMAKE_CURRENT_SOURCE_DIR}/install_dir/lib  --with-boost-python-libname=boost_python${PYTHON_VERSION_NUMERIC}    --build=${CMAKE_HOST_SYSTEM_PROCESSOR}-unknown-linux-gnu )
 endif()
 
 ExternalProject_Add_StepDependencies(openexr build ilmbase)
