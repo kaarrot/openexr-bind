@@ -83,7 +83,7 @@ message(STATUS "EXR_VERSION: " ${MAJOR}.${MINOR}.${PATCH})
 message(STATUS "DSO_VERSION: " ${DSO_VERSION})
 
 if (OFFLINE)
-  if (NOT (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}//ilmbase-${EXR_VERSION}.tar.gz))    
+  if (NOT (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/ilmbase-${EXR_VERSION}.tar.gz))    
     message(FATAL ERROR "
     In the OFFLINE mode download the following dependencies first:
     wget -P ${CMAKE_CURRENT_SOURCE_DIR} http://download.savannah.nongnu.org/releases/openexr/ilmbase-${EXR_VERSION}.tar.gz
@@ -101,7 +101,7 @@ if(OFFLINE EQUAL 0)
 else()
   set (TAR_LOCATION ${CMAKE_CURRENT_SOURCE_DIR})
   set (TAR_LOCATION_BOOST ${CMAKE_CURRENT_SOURCE_DIR})
-  set (TAR_LOCATION_PYBIND ${CMAKE_CURRENT_SOURCE_DIR})
+  set (TAR_LOCATION_PYBIND "${CMAKE_CURRENT_SOURCE_DIR}/pybind_src")
 
 endif()
 message (STATUS "Using TAR location: ${TAR_LOCATION}")
@@ -204,10 +204,12 @@ ExternalProject_Add_StepDependencies(pyilmbase build ilmbase openexr)
 
 ### Pybind11
 message (STATUS ${TAR_LOCATION_PYBIND})
+
 ExternalProject_Add(
   "pybind11"
   PREFIX "external"
-  URL ${TAR_LOCATION_PYBIND}/pybind_src
+  # URL ${TAR_LOCATION_PYBIND}
+  GIT https://github.com/pybind/pybind11.git
   GIT_TAG "v2.3.0"
   DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/pybind_download
   SOURCE_DIR ${CMAKE_BINARY_DIR}/pybind_src
