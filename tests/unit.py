@@ -1,7 +1,7 @@
 import pytest
 import sys
 
-# The PYTHONPATH to compiled pyilm and pybind example is set in bash script run_pytest.sh
+sys.path.insert(0,"../install_dir/lib/python2.7/site-packages")
 
 def test_pybind():
     import example
@@ -9,3 +9,36 @@ def test_pybind():
     
 def test_module_imports():
     import imath
+
+def test_V2i_return():
+    import example, imath
+    assert 1 == example.vec_test_cpp().x
+    assert 2 == example.vec_test_cpp().y
+
+# def test_example_header():
+#     import example
+#     example.test_header()
+
+def test_StringAttribute_value():
+    import example
+    sattr = example._StringAttribute("BB")
+    assert sattr.value() == u"BB"
+
+# image = example.InputFile("/home/kuba/SRC/openexr-bind/build/openexr_src/IlmImfTest/lineOrder_decreasing.exr", 1)
+# header =  image.header()
+# print header.iter()
+# print header.getAttrib("displayWindow")
+
+
+# # Box2i
+# #aa = example._Box2i(imath.V2i(0,1),imath.V2i(2,3))  # not working 
+
+# def test_imath_Box2i():
+#     ''' Test Pyilmbase  Box2iAttribute '''
+#     import example, imath
+#     v1 = imath.V2i(2,3)
+#     v2 = imath.V2i(3,4)
+#     aa = imath.Box2i(v1,v2)
+#     assert aa.center().x == 2
+#     assert aa.center().y == 3
+

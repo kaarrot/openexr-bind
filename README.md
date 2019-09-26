@@ -34,9 +34,15 @@ python3.7 -c "import example; print (example.add(2,3))"
 
 ## Testing
 ```
-cd tests
-run_tests.sh
+cmake ..
+make install
+./tests/run_tests.sh
 ```
+debugging a test 
+```
+python -m pytest -k test_module_imports -s --pdb ../tests/unit.py 
+```
+
 
 ## Building custom Python
 ```

@@ -117,6 +117,21 @@ V2i vec_test_cpp(){
 	return V2i(1,2);
 }
 
+/*
+take input V2i as input
+auto convert to V2i (aaa)
+Create a new value using PyIlmbase; 
+explicitly convert to V2i and perform operation
+return imath.V2i object
+*/
+V2i vec_test_cpp2(V2i aaa){
+  auto b = py::module::import("imath").attr("V2i")(1, 1);
+  // Vec2<int> bbb(b.attr("x").cast<int>(), b.attr("y").cast<int>());
+  Vec2<int> bbb(b.cast<V2i>());
+  cout << aaa + bbb << endl;
+  return aaa + bbb;
+}
+
 void test_header(){
 
 	// InputFile ii = InputFile("/tmp/ies_A2.exr", 1); // not working
@@ -252,7 +267,7 @@ namespace pybind11 { namespace detail {
         }
         static handle cast(V2i src, return_value_policy /* policy */, handle /* parent */) {
 					// Construct new python obj - V2i Doed not have default constructor - using dummy 3,4
-					py::object tv_py = py::module::import("Imath").attr("V2i")(3,4);
+					py::object tv_py = py::module::import("imath").attr("V2i")(3,4);
 					tv_py.attr("x") = py::cast(src.x);
 					tv_py.attr("y") = py::cast(src.y);
 					return tv_py.release();
@@ -270,7 +285,7 @@ namespace pybind11 { namespace detail {
 					return true;
         }
         static handle cast(Box2i src, return_value_policy /* policy */, handle /* parent */) {
-					py::object bbox = py::module::import("Imath").attr("Box2i")(V2i(1,1), V2i(1,1));
+					py::object bbox = py::module::import("imath").attr("Box2i")(V2i(1,1), V2i(1,1));
 					bbox.attr("min") = py::cast(src.min);
 					bbox.attr("max") = py::cast(src.max);
 					return bbox.release();
@@ -334,8 +349,8 @@ py::object getAttribute(Header &self, const char * name){
 	}	
 	else if (self.findTypedAttribute<Box2iAttribute>(name)){
 		Box2i val = self.findTypedAttribute<Box2iAttribute>(name)->value();
-		py::object pyval = py::module::import("Imath").attr("Box2i")(val.min, val.max); // returns: (0, 0) - (236, 118)
-		// py::object pyval = py::module::import("Imath").attr("Box2i")(val);           // returns: (0, 0) - (236, 118) - None
+		py::object pyval = py::module::import("imath").attr("Box2i")(val.min, val.max); // returns: (0, 0) - (236, 118)
+		// py::object pyval = py::module::import("imath").attr("Box2i")(val);           // returns: (0, 0) - (236, 118) - None
 		return pyval;
 	}
 	else{
@@ -439,6 +454,8 @@ PYBIND11_MODULE(example, m) {
 
 		// Option 1 (Better)- if defined custom type_caster
 		m.def("vec_test_cpp", &vec_test_cpp);
+		m.def("vec_test_cpp2", &vec_test_cpp);
+		
 
 		m.def("test_header", &test_header);
 	
