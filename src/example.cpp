@@ -59,41 +59,48 @@ V2i vec_test_cpp(){
     return V2i(1,2);
 }
 
-/*
-take input V2i as input
-auto convert to V2i (aaa)
-Create a new value using PyIlmbase; 
-explicitly convert to V2i and perform operation
-return imath.V2i object
-*/
+
+/// Take input V2i as input
+/// Auto convert to V2i (aaa)
+/// Create a new value using PyIlmbase;
+/// Explicitly convert to V2i and perform operation
+/// Return imath.V2i object
 V2i vec_test_cpp2(V2i aaa){
-  auto b = py::module::import("imath").attr("V2i")(1, 1);
-  // Vec2<int> bbb(b.attr("x").cast<int>(), b.attr("y").cast<int>());
-  Vec2<int> bbb(b.cast<V2i>());
-  cout << aaa + bbb << endl;
-  return aaa + bbb;
+     auto b = py::module::import("imath").attr("V2i")(1, 1);
+     // Vec2<int> bbb(b.attr("x").cast<int>(), b.attr("y").cast<int>());
+     Vec2<int> bbb(b.cast<V2i>());
+     cout << aaa + bbb << endl;
+     return aaa + bbb;
 }
 
-Box2i box_test_cpp(V2i aaa){   // Box<Vec2<int>>
-// Box<Vec2<int>> box_test_cpp(V2i aaa){
-  auto v1 = py::module::import("imath").attr("V2i")(2, 3);
-  auto v2 = py::module::import("imath").attr("V2i")(3, 4);
-  auto v3 = py::module::import("imath").attr("V2i")(aaa.x, aaa.y);
+/// Takes a python object as input, converts to c++
+/// two example of operations
+/// Example 1 - in python with the final cast to c++ object
+/// Example 2 - c++ operation (preferable)
+Box2i box_test_cpp(V2i v1cpp){   // Box<Vec2<int>>
 
-  auto b1 = py::module::import("imath").attr("Box2i")( v1, v2);  // this works
-  cout << "aaa " << aaa.x<<endl;
+     // Exaxmple 1 - take python input to the function
+     //              Construct object in python next casting back to c++
+     /*
+     auto v1py = py::module::import("imath").attr("V2i")(2, 3);
+     auto v4py = py::module::import("imath").attr("V2i")(6,7);
 
-  cout << v1.attr("x").cast<int>() <<endl; // This works and return 2
-  cout << "ccc" << b1.attr("min")().attr("x").cast<int>() <<endl; // min() is a method
-  cout << "ddd" << b1.attr("min")().cast<V2i>() <<endl; // works ddd(2,3)
 
-  // this takes python object aaa 
-  V2i v4(6,7);
-  Box2i bbb(v4,aaa);
-  // Box2i bbb;
+     auto b1py = py::module::import("imath").attr("Box2i")( v1cpp, v4py);  // this works
 
-  // cout << aaa + bbb << endl;
-  return bbb;
+     cout << "V2i.x:"v1py.attr("x").cast<int>() <<endl; // returns 2
+     cout << "Box2i.min.x" << b1py.attr("min")().attr("x").cast<int>() <<endl; // min() is a method
+     cout << "Box2i.cast(min).x" << b1py.attr("min")().cast<V2i>() <<endl; // works ddd(2,3)
+
+     Box2i bbb = b1py.cast<Box2i>();
+     */
+
+     // Example 2 - take python input to the function
+     //             Construct Box object in C++
+     V2i v4(6,7);
+     Box2i bbb(v1cpp, v4);
+
+     return bbb;
 
 }
 
@@ -248,18 +255,20 @@ namespace pybind11 { namespace detail {
         PYBIND11_TYPE_CASTER(Box2i, _("Box2i"));
         bool load(handle src, bool) {
                     if (!src) return false;
-                    value.min = src.attr("min").cast<V2i>();
-                    value.max = src.attr("max").cast<V2i>();
+                    // NOTE: pay attention to attributes some are methods
+                    value.min = src.attr("min")().cast<V2i>();
+                    value.max = src.attr("max")().cast<V2i>();
                     return true;
         }
         static handle cast(Box2i src, return_value_policy /* policy */, handle /* parent */) {
-          py::object bbox = py::module::import("imath").attr("Box2i")(py::cast(src.min), py::cast(src.max));
-          /// NOTE: This version of a cast below  does not work (not sure why)
-          //        Setting attributes does not seem to work, need to set in Box2i constructor
-          // py::object bbox = py::module::import("imath").attr("Box2i")(V2i(1,1), V2i(1,1));
-          // bbox.attr("min") = py::cast(src.min);
-          // bbox.attr("max") = py::cast(src.max);
-          return bbox.release();
+             // Option 1 - using only constructor
+             // py::object bbox = py::module::import("imath").attr("Box2i")(py::cast(src.min), py::cast(src.max));
+
+             // Option 2 - More explicit - using setter (NOTE: setting min/max public fields does not work.
+             py::object bbox = py::module::import("imath").attr("Box2i")(V2i(1,1), V2i(1,1));
+             bbox.attr("setMax")(py::cast(src.min));
+             bbox.attr("setMin")(py::cast(src.max));
+             return bbox.release();
         }
     };
 

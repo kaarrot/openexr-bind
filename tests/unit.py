@@ -28,14 +28,12 @@ def test_StringAttribute_value():
 def test_B2i_custom():
     import example, imath
     import pdb
-    v1 = imath.V2i(2,3)
+    v1py = imath.V2i(2,3)
     v2 = imath.V2i(3,4)
-    b1 = imath.Box2i(v1,v2)
-    # example._Box2f()
-    # bb = vec_test_cpp2(v1)
-    pdb.set_trace()
-    example.box_test_cpp(v1)
-    assert imath.Box2i(imath.V2i(6,7), v1) == example.box_test_cpp(v1)
+    b1 = imath.Box2i(v2, v1py)
+    # pdb.set_trace()
+    # example.box_test_cpp(v1py)
+    assert imath.Box2i(imath.V2i(6,7), v1py) == example.box_test_cpp(v1py)
 
     
 # image = example.InputFile("/home/kuba/SRC/openexr-bind/build/openexr_src/IlmImfTest/lineOrder_decreasing.exr", 1)
