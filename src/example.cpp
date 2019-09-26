@@ -74,6 +74,29 @@ V2i vec_test_cpp2(V2i aaa){
   return aaa + bbb;
 }
 
+Box2i box_test_cpp(V2i aaa){   // Box<Vec2<int>>
+// Box<Vec2<int>> box_test_cpp(V2i aaa){
+  auto v1 = py::module::import("imath").attr("V2i")(2, 3);
+  auto v2 = py::module::import("imath").attr("V2i")(3, 4);
+  auto v3 = py::module::import("imath").attr("V2i")(aaa.x, aaa.y);
+
+  auto b1 = py::module::import("imath").attr("Box2i")( v1, v2);  // this works
+  cout << "aaa " << aaa.x<<endl;
+
+  cout << v1.attr("x").cast<int>() <<endl; // This works and return 2
+  cout << "ccc" << b1.attr("min")().attr("x").cast<int>() <<endl; // min() is a method
+  cout << "ddd" << b1.attr("min")().cast<V2i>() <<endl; // works ddd(2,3)
+
+  // this takes python object aaa 
+  V2i v4(6,7);
+  Box2i bbb(v4,aaa);
+  // Box2i bbb;
+
+  // cout << aaa + bbb << endl;
+  return bbb;
+
+}
+
 void test_header(){
 
     // InputFile ii = InputFile("/tmp/ies_A2.exr", 1); // not working
@@ -121,7 +144,7 @@ void test_header(){
             cout << "attrib: " << it.name() << " V2iAttribute VALUE: " << endl;
         }
             else if (h.findTypedAttribute<V2fAttribute>(it.name())){
-            cout << "attrib: " << it.name() << " V2fAttribute VALUE: " << endl
+              cout << "attrib: " << it.name() << " V2fAttribute VALUE: " << endl;
         }
                 else if (h.findTypedAttribute<V2dAttribute>(it.name())){
             cout << "attrib: " << it.name() << " V2dAttribute VALUE: " << endl;
@@ -141,7 +164,7 @@ void test_header(){
         else if (h.findTypedAttribute<M33fAttribute>(it.name())){
             cout << "attrib: " << it.name() << " M33fAttribute VALUE: " << endl; 
         }
-        else if (h.findTypedAttribute<M33dAttribute>(it.name()))
+        else if (h.findTypedAttribute<M33dAttribute>(it.name())) {
             cout << "attrib: " << it.name() << " M33dAttribute VALUE: " << endl; 
         }
         else if (h.findTypedAttribute<M44fAttribute>(it.name())){
@@ -230,10 +253,13 @@ namespace pybind11 { namespace detail {
                     return true;
         }
         static handle cast(Box2i src, return_value_policy /* policy */, handle /* parent */) {
-                    py::object bbox = py::module::import("imath").attr("Box2i")(V2i(1,1), V2i(1,1));
-                    bbox.attr("min") = py::cast(src.min);
-                    bbox.attr("max") = py::cast(src.max);
-                    return bbox.release();
+          py::object bbox = py::module::import("imath").attr("Box2i")(py::cast(src.min), py::cast(src.max));
+          /// NOTE: This version of a cast below  does not work (not sure why)
+          //        Setting attributes does not seem to work, need to set in Box2i constructor
+          // py::object bbox = py::module::import("imath").attr("Box2i")(V2i(1,1), V2i(1,1));
+          // bbox.attr("min") = py::cast(src.min);
+          // bbox.attr("max") = py::cast(src.max);
+          return bbox.release();
         }
     };
 
@@ -399,7 +425,7 @@ PYBIND11_MODULE(example, m) {
         // Option 1 (Better)- if defined custom type_caster
         m.def("vec_test_cpp", &vec_test_cpp);
         m.def("vec_test_cpp2", &vec_test_cpp);
-
+        m.def("box_test_cpp", &box_test_cpp);
 
         m.def("test_header", &test_header);
 
