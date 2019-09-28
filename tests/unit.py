@@ -35,6 +35,13 @@ def test_B2i_custom():
     # example.box_test_cpp(v1py)
     assert imath.Box2i(imath.V2i(6,7), v1py) == example.box_test_cpp(v1py)
 
+def test_StringAttribute_add():
+    import pdb
+    import example
+    aaa = example._StringAttribute("aaa")
+    assert "aaabbb" == aaa + "bbb"
+
+
     
 # image = example.InputFile("/home/kuba/SRC/openexr-bind/build/openexr_src/IlmImfTest/lineOrder_decreasing.exr", 1)
 # header =  image.header()

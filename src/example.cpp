@@ -66,11 +66,11 @@ V2i vec_test_cpp(){
 /// Explicitly convert to V2i and perform operation
 /// Return imath.V2i object
 V2i vec_test_cpp2(V2i aaa){
-     auto b = py::module::import("imath").attr("V2i")(1, 1);
-     // Vec2<int> bbb(b.attr("x").cast<int>(), b.attr("y").cast<int>());
-     Vec2<int> bbb(b.cast<V2i>());
-     cout << aaa + bbb << endl;
-     return aaa + bbb;
+    auto b = py::module::import("imath").attr("V2i")(1, 1);
+    // Vec2<int> bbb(b.attr("x").cast<int>(), b.attr("y").cast<int>());
+    Vec2<int> bbb(b.cast<V2i>());
+    cout << aaa + bbb << endl;
+    return aaa + bbb;
 }
 
 /// Takes a python object as input, converts to c++
@@ -79,28 +79,29 @@ V2i vec_test_cpp2(V2i aaa){
 /// Example 2 - c++ operation (preferable)
 Box2i box_test_cpp(V2i v1cpp){   // Box<Vec2<int>>
 
-     // Exaxmple 1 - take python input to the function
-     //              Construct object in python next casting back to c++
-     /*
-     auto v1py = py::module::import("imath").attr("V2i")(2, 3);
-     auto v4py = py::module::import("imath").attr("V2i")(6,7);
+    // Exaxmple 1 - take python input to the function
+    //              Construct object in python next casting back to c++
+    /*
+    auto v1py = py::module::import("imath").attr("V2i")(2, 3);
+    auto v4py = py::module::import("imath").attr("V2i")(6,7);
 
 
-     auto b1py = py::module::import("imath").attr("Box2i")( v1cpp, v4py);  // this works
+    auto b1py = py::module::import("imath").attr("Box2i")( v1cpp, v4py);  // this works
 
-     cout << "V2i.x:"v1py.attr("x").cast<int>() <<endl; // returns 2
-     cout << "Box2i.min.x" << b1py.attr("min")().attr("x").cast<int>() <<endl; // min() is a method
-     cout << "Box2i.cast(min).x" << b1py.attr("min")().cast<V2i>() <<endl; // works ddd(2,3)
+    cout << "V2i.x:"<<v1py.attr("x").cast<int>() <<endl; // returns 2
+    cout << "Box2i.min.x" << b1py.attr("min")().attr("x").cast<int>() <<endl; // min() is a method
+    cout << "Box2i.cast(min).x" << b1py.attr("min")().cast<V2i>() <<endl; // works ddd(2,3)
 
-     Box2i bbb = b1py.cast<Box2i>();
-     */
+    auto b  = b1py.cast<Box2i>(); // cast from c++ to python 
+    Box2i bbb = b;  // cast fro pyton to c++ (see caster
+    */
 
-     // Example 2 - take python input to the function
-     //             Construct Box object in C++
-     V2i v4(6,7);
-     Box2i bbb(v1cpp, v4);
+    // Example 2 - take python input to the function
+    //             Construct Box object in C++
+    V2i v4(6,7);
+    Box2i bbb(v1cpp, v4);
 
-     return bbb;
+    return bbb;
 
 }
 
@@ -234,18 +235,18 @@ namespace pybind11 { namespace detail {
 
       // python -> c++
         bool load(handle src, bool) {
-                    if (!src) return false;
-                    value.x = src.attr("x").cast<int>();
-                    value.y = src.attr("y").cast<int>();
-                    return true;
+            if (!src) return false;
+            value.x = src.attr("x").cast<int>();
+            value.y = src.attr("y").cast<int>();
+            return true;
         }
         // c++ -> python
         static handle cast(V2i src, return_value_policy /* policy */, handle /* parent */) {
-                    // Construct new python obj - V2i Doed not have default constructor - using dummy 3,4
-                    py::object tv_py = py::module::import("imath").attr("V2i")(3,4);
-                    tv_py.attr("x") = py::cast(src.x);
-                    tv_py.attr("y") = py::cast(src.y);
-                    return tv_py.release();
+            // Construct new python obj - V2i Doed not have default constructor - using dummy 3,4
+            py::object tv_py = py::module::import("imath").attr("V2i")(3,4);
+            tv_py.attr("x") = py::cast(src.x);
+            tv_py.attr("y") = py::cast(src.y);
+            return tv_py.release();
         }
     };
 
@@ -254,23 +255,24 @@ namespace pybind11 { namespace detail {
     public:
         PYBIND11_TYPE_CASTER(Box2i, _("Box2i"));
         bool load(handle src, bool) {
-                    if (!src) return false;
-                    // NOTE: pay attention to attributes some are methods
-                    value.min = src.attr("min")().cast<V2i>();
-                    value.max = src.attr("max")().cast<V2i>();
-                    return true;
+            if (!src) return false;
+            // NOTE: pay attention to attributes some are methods
+            value.min = src.attr("min")().cast<V2i>();
+            value.max = src.attr("max")().cast<V2i>();
+            return true;
         }
         static handle cast(Box2i src, return_value_policy /* policy */, handle /* parent */) {
-             // Option 1 - using only constructor
-             // py::object bbox = py::module::import("imath").attr("Box2i")(py::cast(src.min), py::cast(src.max));
+            // Option 1 - using only constructor
+            // py::object bbox = py::module::import("imath").attr("Box2i")(py::cast(src.min), py::cast(src.max));
 
-             // Option 2 - More explicit - using setter (NOTE: setting min/max public fields does not work.
-             py::object bbox = py::module::import("imath").attr("Box2i")(V2i(1,1), V2i(1,1));
-             bbox.attr("setMax")(py::cast(src.min));
-             bbox.attr("setMin")(py::cast(src.max));
-             return bbox.release();
+            // Option 2 - More explicit - using setter (NOTE: setting min/max public fields does not work.
+            py::object bbox = py::module::import("imath").attr("Box2i")(V2i(1,1), V2i(1,1));
+            bbox.attr("setMax")(py::cast(src.min));
+            bbox.attr("setMin")(py::cast(src.max));
+            return bbox.release();
         }
     };
+
 
 /* TODO: add type casters
 Box
@@ -425,55 +427,63 @@ PYBIND11_MODULE(example, m) {
 
     m.def("add", &add, "A function which adds two numbers");
 
-        m.attr("FLOAT") = PyLong_FromLong(FLOAT);
-        m.attr("HALF") = PyLong_FromLong(HALF);
-        m.attr("UINT") = PyLong_FromLong(UINT);
-        // m.attr("__version__") = PyString_FromString(VERSION);
+    m.attr("FLOAT") = PyLong_FromLong(FLOAT);
+    m.attr("HALF") = PyLong_FromLong(HALF);
+    m.attr("UINT") = PyLong_FromLong(UINT);
+    // m.attr("__version__") = PyString_FromString(VERSION);
 
-
-        // Option 1 (Better)- if defined custom type_caster
-        m.def("vec_test_cpp", &vec_test_cpp);
-        m.def("vec_test_cpp2", &vec_test_cpp);
-        m.def("box_test_cpp", &box_test_cpp);
-
-        m.def("test_header", &test_header);
-
-        //////////////////// Define basic types - not neccsary as this should be handled by custom casters
-        // py::class_<Box2i>(m, "Box2i", py::dynamic_attr())
-        // .def(py::init<>())
-        // .def(py::init<Vec2<int>, Vec2<int>>())
-        // // Box (const T &point);
+    
+    // Option 1 (Better)- if defined custom type_caster
+    m.def("vec_test_cpp", &vec_test_cpp);
+    m.def("vec_test_cpp2", &vec_test_cpp);
+    m.def("box_test_cpp", &box_test_cpp);
+    
+    m.def("test_header", &test_header);
+    
+    //////////////////// Define basic types - not neccsary as this should be handled by custom casters
+    // py::class_<Box2i>(m, "Box2i", py::dynamic_attr())
+    // .def(py::init<>())
+    // .def(py::init<Vec2<int>, Vec2<int>>())
+    // // Box (const T &point);
     // .def_readwrite("min", &Box2i::min)  // requires to specify py::dynamic_attr()
-        // .def_readwrite("max", &Box2i::max);  // requires to specify py::dynamic_attr()
+    // .def_readwrite("max", &Box2i::max);  // requires to specify py::dynamic_attr()
 
-        //////////////////// Define Attriubute types
-        /*
-            may not be required in pyton as this is a simple mapping from type to attribute
-            works more as a wrapper around eache type
-            Perhaps better would be to extend and expose just the base classs Attribute 
-            and provide conversion in that class only ????
-         */
-        py::class_<StringAttribute>(m, "_StringAttribute")
-            .def(py::init<std::string>())
-            // .def_readwrite("_value", &TypedAttribute<string>::_value);  // protectd
-            // .def("value", &StringAttribute::value);                     // unresolved overloaded function type> 
-            .def("value", [](StringAttribute &self){                       // working
-                    return self.value();
-                });
-        py::class_<FloatAttribute>(m, "_FloatAttribute")
-            .def(py::init<float>())
-            .def("value", [](FloatAttribute &self){
-                    return self.value();
+    //////////////////// Define Attriubute types
+    /*
+      may not be required in python as this is a simple mapping from type to attribute
+      works more as a wrapper around eache type
+      Perhaps better would be to extend and expose just the base classs Attribute 
+      and provide conversion in that class only ????
+    */
+    py::class_<StringAttribute>(m, "_StringAttribute")
+        .def(py::init<std::string>())
+        // .def_readwrite("_value", &TypedAttribute<string>::_value);  // protected
+        // .def("value", &StringAttribute::value);                     // unresolved overloaded function type> 
+        .def("value", [](StringAttribute &self){                       // working, value is python method
+                return self.value();  /// is c++ method
+            })
+        .def("__repr__", [](StringAttribute &self){
+                return self.value();
+            })
+        .def("__add__", [](StringAttribute &self, py::str str){
+                py::str o = self.value();
+                return o + str;
             });
-        py::class_<Box2iAttribute>(m, "_Box2i")
-            .def(py::init<Box2i>());
 
-        //////////////////// Main OpenEXR classes
-        py::class_<Header>(m, "Header")
-            .def(py::init<Box2i,Box2i,float,V2f,float,LineOrder>())
-            // .def("screenWindowWidth", &Header::screenWindowWidth); // not working:def(const char [18], <unresolved overloaded function type>)’
+    py::class_<FloatAttribute>(m, "_FloatAttribute")
+        .def(py::init<float>())
+        .def("value", [](FloatAttribute &self){
+                return self.value();
+            });
+    py::class_<Box2iAttribute>(m, "_Box2i")
+        .def(py::init<Box2i>());
+
+    //////////////////// Main OpenEXR classes
+    py::class_<Header>(m, "Header")
+        .def(py::init<Box2i,Box2i,float,V2f,float,LineOrder>())
+        // .def("screenWindowWidth", &Header::screenWindowWidth); // not working:def(const char [18], <unresolved overloaded function type>)’
         .def("screenWindowWidth", [](Header &self){  // working
-                    return self.screenWindowWidth();
+                return self.screenWindowWidth();
             })
         .def("getAttrib", &getAttribute)
         .def("iter", [](Header &self){
