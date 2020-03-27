@@ -5,15 +5,30 @@ Python bindings for OpenEXR library using Pybind11
 ## Requirements:
 - ilmbase
 - openexr
-- pyilmbase (reuse ilmbase base types) - requires Boost python,system
-- python
-- cmake
+- pyilmbase - requires Boost (python,system) and python numpy on your system. (see Troubleshooting section at the end).
+- python (2.7 for pyilmbase, or any other for Pybind11)
+- cmake  >= 3.12
 - Boost Python (support for Python version the bindings are built for)
 
-NOTE: Currently PyIlmbase does not compile using Python3.
-For full functionality please use Python 2.7 for the time being. 
+
+NOTE: Currently PyIlmbase does not compile with Python3.
+For full functionality please use Python 2.7 for the time being.
+
+
 
 ## Building 
+
+#### Build only IlmBase + OpenEXR + Pybind11 + Example
+```
+make ..
+```
+
+#### Build also PyIlmbase (with optional Boost Python)
+```
+cmake .. -DBUILD_PYILMBASE=1 -DBUILD_BOOST_PYTHON=1
+```
+
+#### Custom version of Python
 ```
 export PYTHON=python3.6  # extra step for PyIlmbase
 cmake -DPYTHON_VERSION=3.6 ..
@@ -62,7 +77,8 @@ cd $HOME/python/lib && ln -s python3.so python.so
 ## Troubleshooting
 
 #### Install Python headers
-sudo apt install python2.7-dev
+sudo apt install python-dev
+sudo apt install python-numpy
 
 #### Install boost dependencies
 Pass ```-DBUILD_BOOST_PYTHON=ON``` flag while configuring cmake or install with package manager
