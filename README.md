@@ -74,6 +74,20 @@ Similarily for shared library as it is -lpython is used in pyilmbase link tests
 cd $HOME/python/lib && ln -s python3.so python.so
 ```
 
+## Install dependencies on Windows
+
+#### install vcpkg
+git clone https://github.com/Microsoft/vcpkg.git
+.\bootstrap-vcpkg.bat
+.\vcpkg integrate install
+
+#### set envinnment variable
+VCPKG_DEFAULT_TRIPLET environment variable to x64-windows
+
+#### Pass vcpkg toolchain to CMake
+cmake .. -DCMAKE_TOOLCHAIN_FILE=$HOME/SRC/vcpkg/scripts/buildsystems/vcpkg.cmake
+
+
 ## Troubleshooting
 
 #### Install Python headers

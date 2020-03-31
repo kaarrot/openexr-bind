@@ -76,13 +76,14 @@ ExternalProject_Add(
 # TODO: Enable if PyILMbase is active (if Python 2.7 and Boost)
 # TODO: symlinks won't work on Windows
 # Create symlinks so that PyIlmbase does not complain.
+if (NOT WIN32)
 add_custom_command(TARGET ilmbase POST_BUILD
   COMMAND ln -fs libIlmThread-${DSO_VERSION}.so.12 libIlmThread.so
   COMMAND ln -fs libImath-${DSO_VERSION}.so libImath.so
   COMMAND ln -fs libIexMath-${DSO_VERSION}.so libIexMath.so
   COMMAND ln -fs libIex-${DSO_VERSION}.so libIex.so
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/install_dir/lib/)
-
+endif()
 ### OpenEXR
 
 ExternalProject_Add(
@@ -149,15 +150,16 @@ else()
   message (STATUS "Using system Python...")
   find_package (Python ${PYTHON_VERSION} REQUIRED COMPONENTS Development )
   find_package(PythonLibs REQUIRED)  # to find Python.h
-  
-  # On some systems libpythonX.X.so is missing, link it with existing libpythonX.Xm.so
-  set(system_lib_path /usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}/)
-  message (STATUS "Checking ${system_lib_path}/libpython${PYTHON_VERSION}.so")
 
-  if (NOT (EXISTS ${system_lib_path}/libpython${PYTHON_VERSION}.so))
-    message (WARNING "missing symlink to ${system_lib_path}/libpython${PYTHON_VERSION}.so")
+  if (NOT WIN32)
+    # On some systems libpythonX.X.so is missing, link it with existing libpythonX.Xm.so
+    set(system_lib_path /usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}/)
+    message (STATUS "Checking ${system_lib_path}/libpython${PYTHON_VERSION}.so")
+
+    if (NOT (EXISTS ${system_lib_path}/libpython${PYTHON_VERSION}.so))
+      message (WARNING "missing symlink to ${system_lib_path}/libpython${PYTHON_VERSION}.so")
+    endif()
   endif()
-
 endif()
 
 
