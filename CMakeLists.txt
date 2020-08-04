@@ -172,58 +172,63 @@ endif()
 
 ### PyIlmBase
 
-# Set PyilmBase commands
-set (PYILMBASE_PATCH_CMD "")
-set (PYILMBASE_CONFIGURE_CMD   CONFIGURE_COMMAND ${CMAKE_BINARY_DIR}/pyilmbase_src/./configure   --prefix=${CMAKE_CURRENT_SOURCE_DIR}/install_dir PKG_CONFIG_PATH=../../install_dir/lib/pkgconfig --build=${CMAKE_HOST_SYSTEM_PROCESSOR}-unknown-linux-gnu )
-if ( BUILD_BOOST_PYTHON )
-  ExternalProject_Add_StepDependencies(ilmbase build boost)
+# # Set PyilmBase commands
+# set (PYILMBASE_PATCH_CMD "")
+# set (PYILMBASE_CONFIGURE_CMD   CONFIGURE_COMMAND ${CMAKE_BINARY_DIR}/pyilmbase_src/./configure   --prefix=${CMAKE_CURRENT_SOURCE_DIR}/install_dir PKG_CONFIG_PATH=../../install_dir/lib/pkgconfig --build=${CMAKE_HOST_SYSTEM_PROCESSOR}-unknown-linux-gnu )
+# if ( BUILD_BOOST_PYTHON )
+#   ExternalProject_Add_StepDependencies(ilmbase build boost)
 
-  if (NOT (USE_CUSTOM_PYTHON STREQUAL ""))
-    set (PYILMBASE_PATCH_CMD sed -i -r s/^PYTHON_[A-Z]+_DIR=/\#&/ ${CMAKE_BINARY_DIR}/pyilmbase_src/configure)
-  endif()
+#   if (NOT (USE_CUSTOM_PYTHON STREQUAL ""))
+#     set (PYILMBASE_PATCH_CMD sed -i -r s/^PYTHON_[A-Z]+_DIR=/\#&/ ${CMAKE_BINARY_DIR}/pyilmbase_src/configure)
+#   endif()
 
-  set (PYILMBASE_CONFIGURE_CMD LD_LIBRARY_PATH=${CMAKE_CURRENT_SOURCE_DIR}/install_dir/lib:${CUSTOM_PYTHON_ROOT}/lib ${CMAKE_BINARY_DIR}/pyilmbase_src/./configure   --prefix=${CMAKE_CURRENT_SOURCE_DIR}/install_dir PKG_CONFIG_PATH=../../install_dir/lib/pkgconfig    --with-boost-include-dir=${CMAKE_CURRENT_SOURCE_DIR}/install_dir/include --with-boost-lib-dir=${CMAKE_CURRENT_SOURCE_DIR}/install_dir/lib  --with-boost-python-libname=boost_python${PYTHON_VERSION_NUMERIC}    --build=${CMAKE_HOST_SYSTEM_PROCESSOR}-unknown-linux-gnu )
-endif()
+#   set (PYILMBASE_CONFIGURE_CMD LD_LIBRARY_PATH=${CMAKE_CURRENT_SOURCE_DIR}/install_dir/lib:${CUSTOM_PYTHON_ROOT}/lib ${CMAKE_BINARY_DIR}/pyilmbase_src/./configure   --prefix=${CMAKE_CURRENT_SOURCE_DIR}/install_dir PKG_CONFIG_PATH=../../install_dir/lib/pkgconfig    --with-boost-include-dir=${CMAKE_CURRENT_SOURCE_DIR}/install_dir/include --with-boost-lib-dir=${CMAKE_CURRENT_SOURCE_DIR}/install_dir/lib  --with-boost-python-libname=boost_python${PYTHON_VERSION_NUMERIC}    --build=${CMAKE_HOST_SYSTEM_PROCESSOR}-unknown-linux-gnu )
+# endif()
 
-ExternalProject_Add_StepDependencies(openexr build ilmbase)
+# ExternalProject_Add_StepDependencies(openexr build ilmbase)
 
-ExternalProject_Add(
-  "pyilmbase"
-  PREFIX "external"
-  URL ${TAR_LOCATION}/pyilmbase-${EXR_VERSION}.tar.gz
-  DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/pyilmbase_download
-  SOURCE_DIR ${CMAKE_BINARY_DIR}/pyilmbase_src
-  INSTALL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/install_dir
-  PATCH_COMMAND ${PYILMBASE_PATCH_CMD}
-  CONFIGURE_COMMAND ${PYILMBASE_CONFIGURE_CMD}
-  BUILD_COMMAND "make"
-  )
+# ExternalProject_Add(
+#   "pyilmbase"
+#   PREFIX "external"
+#   URL ${TAR_LOCATION}/pyilmbase-${EXR_VERSION}.tar.gz
+#   DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/pyilmbase_download
+#   SOURCE_DIR ${CMAKE_BINARY_DIR}/pyilmbase_src
+#   INSTALL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/install_dir
+#   PATCH_COMMAND ${PYILMBASE_PATCH_CMD}
+#   CONFIGURE_COMMAND ${PYILMBASE_CONFIGURE_CMD}
+#   BUILD_COMMAND "make"
+#   )
 
-ExternalProject_Add_StepDependencies(pyilmbase build ilmbase openexr)
+# ExternalProject_Add_StepDependencies(pyilmbase build ilmbase openexr)
 
-### Pybind11
+# Disable pyilmbase as it does not work for python3
 
-ExternalProject_Add(
-  "pybind11"
-  PREFIX "external"
-  ${PYBIND_REPO}
-  GIT_TAG "v2.3.0"
-  DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/pybind_download
-  SOURCE_DIR ${CMAKE_BINARY_DIR}/pybind_src
-  INSTALL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/install_dir
-  BUILD_COMMAND ""
-  CMAKE_ARGS
-  "-DCMAKE_BUILD_TYPE=Release"
-  "-DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_SOURCE_DIR}/install_dir"
-  "-DPYBIND11_TEST=0"
- )
+ExternalProject_Add_StepDependencies( ilmbase openexr)
 
-### Openexr-bind
+# ### Pybind11
+
+# ExternalProject_Add(
+#   "pybind11"
+#   PREFIX "external"
+#   ${PYBIND_REPO}
+#   GIT_TAG "v2.3.0"
+#   DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/pybind_download
+#   SOURCE_DIR ${CMAKE_BINARY_DIR}/pybind_src
+#   INSTALL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/install_dir
+#   BUILD_COMMAND ""
+#   CMAKE_ARGS
+#   "-DCMAKE_BUILD_TYPE=Release"
+#   "-DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_SOURCE_DIR}/install_dir"
+#   "-DPYBIND11_TEST=0"
+#  )
+
+# ### Openexr-bind
 
 add_library(example SHARED src/example.cpp)         # sources
-SET_TARGET_PROPERTIES(example PROPERTIES PREFIX "") # remove lib from library prefix
-set(CMAKE_CXX_FLAGS "-fno-strict-aliasing -fwrapv")
-add_dependencies(example pybind11 pyilmbase )
+# SET_TARGET_PROPERTIES(example PROPERTIES PREFIX "") # remove lib from library prefix
+# set(CMAKE_CXX_FLAGS "-fno-strict-aliasing -fwrapv")
+# # add_dependencies(example pybind11 pyilmbase )
+# add_dependencies(example pybind11)
 
 # FIXME: Two python includes Python_INCLUDE_DIR fro find_package PYTHON_INCLUDE_DIR from custom python build
 target_include_directories(example PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/install_dir/include/ ${CMAKE_CURRENT_SOURCE_DIR}/install_dir/include/OpenEXR ${PYTHON_INCLUDE_DIR} ${Python_INCLUDE_DIR})
