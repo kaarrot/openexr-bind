@@ -6,20 +6,24 @@ include(ExternalProject)
 
 set(CMAKE_CXX_STANDARD 11)
 
-# Enable PyIlmbase python wrappers
-set(BUILD_PYILMBASE OFF CACHE BOOL "")
-
 # Build only Ilmbase and OpenEXR libraries
-set(BUILD_EXR_ONLY OFF CACHE BOOL "Skip all steps requiring Python: Finding Python modules, Boost, Pyilmbase, PyBind11")
-
+set(BUILD_EXR_ONLY OFF CACHE BOOL "Skip all steps requiring Python: Finding Python modules, Boost, Pyilmbase, PyBind11 - TODO")
 
 set(PYTHON_VERSION 2.7 CACHE STRING "Major/Minor verison of Python. The default is  2.7. You may need to install python-dev")
 STRING ( REGEX REPLACE "[.]" "" PYTHON_VERSION_NUMERIC ${PYTHON_VERSION} )
 message (STATUS "Using Python: ${PYTHON_VERSION}")
 
-set(BUILD_BOOST_PYTHON OFF CACHE BOOL "Build Boost - required if package manager does not ship specific version of boost-python bindings")
-
 set(USE_CUSTOM_PYTHON ""  CACHE STRING "")
+
+# Enable PyIlmbase python wrappers
+set(BUILD_BOOST_PYTHON ON CACHE BOOL "Build Boost - required if package manager does not ship specific version of boost-python bindings")
+set(BUILD_PYILMBASE ON CACHE BOOL "")
+
+if (BUILD_PYILMBASE AND (PYTHON_VERSION STRGREATER_EQUAL 3.0))
+  message (WARNING "Disable BUILD_PYILMBASE & BUILD_BOOST_PYTHON as it won't build for Python 3")
+  set(BUILD_PYILMBASE OFF)
+  set(BUILD_BOOST_PYTHON OFF)
+endif()
 
 set(OFFLINE 0 CACHE BOOL "Skips download and uses tarballs downloaded into the root of the project")
 set(EXR_VERSION 2.2.0 CACHE STRING "Major/Minor/Patch version of OpenEXR dependencies")
@@ -34,21 +38,20 @@ set(DSO_VERSION "${MAJOR}_${MINOR}")
 message(STATUS "EXR_VERSION: " ${MAJOR}.${MINOR}.${PATCH})
 message(STATUS "DSO_VERSION: " ${DSO_VERSION})
 
-
 if (OFFLINE)
   if (NOT (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/ilmbase-${EXR_VERSION}.tar.gz))
     message(FATAL ERROR "
     In the OFFLINE mode download the following dependencies first:
-    wget -P ${CMAKE_CURRENT_SOURCE_DIR} http://download.savannah.nongnu.org/releases/openexr/ilmbase-${EXR_VERSION}.tar.gz
-    wget -P ${CMAKE_CURRENT_SOURCE_DIR} http://download.savannah.nongnu.org/releases/openexr/openexr-${EXR_VERSION}.tar.gz
-    wget -P ${CMAKE_CURRENT_SOURCE_DIR} http://download.savannah.nongnu.org/releases/openexr/pyilmbase-${EXR_VERSION}.tar.gz
+    wget -P ${CMAKE_CURRENT_SOURCE_DIR} http://nongnu.askapache.com/openexr/ilmbase-${EXR_VERSION}.tar.gz
+    wget -P ${CMAKE_CURRENT_SOURCE_DIR} http://nongnu.askapache.com/openexr/openexr-${EXR_VERSION}.tar.gz
+    wget -P ${CMAKE_CURRENT_SOURCE_DIR} http://nongnu.askapache.com/openexr/pyilmbase-${EXR_VERSION}.tar.gz
     wget -P ${CMAKE_CURRENT_SOURCE_DIR} https://dl.bintray.com/boostorg/release/1.71.0/source/boost_1_71_0.tar.gz 
     git clone  https://github.com/pybind/pybind11.git --branch v2.3.0 ${CMAKE_CURRENT_SOURCE_DIR}/pybind_src
     ")
   endif()
 endif()
 if(OFFLINE EQUAL 0)
-  set (TAR_LOCATION http://download.savannah.nongnu.org/releases/openexr/)
+  set (TAR_LOCATION http://nongnu.askapache.com/openexr/)
   set (TAR_LOCATION_BOOST https://dl.bintray.com/boostorg/release/1.71.0/source/)
   set (PYBIND_REPO GIT_REPOSITORY https://github.com/pybind/pybind11.git)
 else()
@@ -58,7 +61,7 @@ else()
 
 endif()
 
-  
+
 ### IlmBase
 ExternalProject_Add(
   "ilmbase"
@@ -73,7 +76,6 @@ ExternalProject_Add(
   "-DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_SOURCE_DIR}/install_dir"
   )
 
-# TODO: Enable if PyILMbase is active (if Python 2.7 and Boost)
 # TODO: symlinks won't work on Windows
 # Create symlinks so that PyIlmbase does not complain.
 add_custom_command(TARGET ilmbase POST_BUILD
@@ -102,12 +104,12 @@ ExternalProject_Add(
 # Ideally this should be patched but for now we handle this ourselves.
 set(host_architecture ${CMAKE_HOST_SYSTEM_PROCESSOR})
 if ((${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "aarch64") OR # jetson nano
-    (${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "armv7l"))    # rpi 3B+
+    (${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "armv7l"))    # rpi 3B+ / 4B+
   set (host_architecture "x86_64-unknown-linux-gnu")
   message (STATUS "openexr build arch: ${host_architecture} (instead of ${CMAKE_HOST_SYSTEM_PROCESSOR})")
 endif()
 
-  ExternalProject_Add_StepDependencies(openexr ilmbase)
+ExternalProject_Add_StepDependencies(openexr build ilmbase)
 
 ### Python - Custom / System version
 
@@ -244,6 +246,7 @@ SET_TARGET_PROPERTIES(example PROPERTIES PREFIX "") # remove lib from library pr
 set(CMAKE_CXX_FLAGS "-fno-strict-aliasing -fwrapv")
 
 if (BUILD_PYILMBASE)
+  message (STATUS "the 'example.cpp' uses pyilmbase as well")
   add_dependencies(example pybind11 pyilmbase )
 else()
   add_dependencies(example pybind11)
@@ -259,3 +262,16 @@ target_link_libraries(example Imath Half Iex IexMath IlmThread IlmImf-${DSO_VERS
 
 install(TARGETS example DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/install_dir/lib/python${PYTHON_VERSION}/site-packages/)
 
+message ("")
+message (STATUS "====== Summary ======")
+message (STATUS "OFFLINE: " ${OFFLINE})
+message (STATUS "USE_CUSTOM_PYTHON: " ${USE_CUSTOM_PYTHON})
+message (STATUS "PYTHON_VERSION: " ${PYTHON_VERSION})
+message (STATUS "BUILD_BOOST_PYTHON:" ${BUILD_BOOST_PYTHON})
+message (STATUS "BUILD_PYILMBASE: " ${BUILD_PYILMBASE})
+message (STATUS "BUILD_EXR_ONLY: " ${BUILD_EXR_ONLY})
+message ("")
+message ("Once bulid and installed, update add new module to the PYTHONPATH:")
+message ("export LD_LIBRARY_PATH=${CMAKE_SOURCE_DIR}/install_dir/lib/:$LD_LIBRARY_PATH")
+message ("export PYTHONPATH=\"$PYTHONPATH:${CMAKE_SOURCE_DIR}/install_dir/lib/python${PYTHON_VERSION}/site-packages/\"")
+message ("")

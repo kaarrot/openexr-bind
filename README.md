@@ -47,10 +47,12 @@ cmake .. -DPYTHON_VERSION=3.6 -DBUILD_BOOST_PYTHON=ON
 python3.7 -c "import example; print (example.add(2,3))"
 ```
 
-## Testing
+## Testing (Python 2.7) - assumes PyILMbase was installed
 ```
 cmake ..
 make install
+
+pip install pytest
 ./tests/run_tests.sh
 ```
 debugging a test 
