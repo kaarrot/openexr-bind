@@ -239,6 +239,8 @@ ExternalProject_Add(
   "-DPYBIND11_TEST=0"
   )
 
+ExternalProject_Add_StepDependencies(pybind11 build ilmbase openexr)
+
 ### Openexr-bind
 
 add_library(example SHARED src/example.cpp)         # sources
@@ -270,6 +272,7 @@ message (STATUS "PYTHON_VERSION: " ${PYTHON_VERSION})
 message (STATUS "BUILD_BOOST_PYTHON:" ${BUILD_BOOST_PYTHON})
 message (STATUS "BUILD_PYILMBASE: " ${BUILD_PYILMBASE})
 message (STATUS "BUILD_EXR_ONLY: " ${BUILD_EXR_ONLY})
+message (STATUS "Remember to remove build directory if you wish to modify cached settings! (-DBUILD_PYILMBASE=OFF)")
 message ("")
 message ("Once bulid and installed, update add new module to the PYTHONPATH:")
 message ("export LD_LIBRARY_PATH=${CMAKE_SOURCE_DIR}/install_dir/lib/:$LD_LIBRARY_PATH")
