@@ -254,8 +254,15 @@ else()
   add_dependencies(example pybind11)
 endif()
 
-# FIXME: Two python includes Python_INCLUDE_DIR fro find_package PYTHON_INCLUDE_DIR from custom python build
-target_include_directories(example PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/install_dir/include/ ${CMAKE_CURRENT_SOURCE_DIR}/install_dir/include/OpenEXR ${PYTHON_INCLUDE_DIR} ${Python_INCLUDE_DIR})
+
+# Handle different include paths resolved by CMake for Python 2 and Python 3
+set(PROJECT_PYTHON_INCLUDE_PATH "")
+if (PYTHON_VERSION STRGREATER_EQUAL 3.0)
+  set(PROJECT_PYTHON_INCLUDE_PATH ${PYTHON_INCLUDE_DIR}) # Python 3
+else()
+  set(PROJECT_PYTHON_INCLUDE_PATH ${Python_INCLUDE_DIR}) # Python 2
+endif()
+target_include_directories(example PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/install_dir/include/ ${CMAKE_CURRENT_SOURCE_DIR}/install_dir/include/OpenEXR  ${PROJECT_PYTHON_INCLUDE_PATH})
 
 # Add the to already built libraries
 target_link_directories(example BEFORE PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/install_dir/lib/)
